@@ -58,7 +58,7 @@ export function Shelf({ books, justAdded }: Props) {
     if (!r) return;
     const book = books[index];
     if (!book) return;
-    const stacked = el?.dataset.stacked === "true";
+    const stacked = el?.dataset["stacked"] === "true";
     const scale = 0.58;
     const width = stacked ? book.width * scale : r.width;
     const height = stacked ? book.height * scale : r.height;

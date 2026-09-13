@@ -89,31 +89,32 @@ export function BookSpine({ book, onOpen, className, stacked = false }: Props) {
             />
           ) : null}
 
-          {/* hinged front cover face */}
-          <span
-            className="pointer-events-none absolute top-0 left-full h-full"
-            style={{
-              width: COVER_W,
-              transformOrigin: "left center",
-              transform: "rotateY(90deg)",
-              backgroundColor: book.spine,
-              backgroundImage: book.cover ? `url(${book.cover})` : undefined,
-              backgroundSize: "contain",
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "center",
-            }}
-          />
-
-          {/* page block */}
-          <span
-            className="pointer-events-none absolute -top-[6px] left-0 h-[6px] w-full"
-            style={{
-              transformOrigin: "bottom center",
-              transform: "rotateX(78deg)",
-              background: "linear-gradient(90deg, #efe6d3, #cdc0a8)",
-            }}
-          />
-          {book.binding === "hardcover" && (
+          {!stacked && (
+            <>
+              <span
+                className="pointer-events-none absolute top-0 left-full h-full"
+                style={{
+                  width: COVER_W,
+                  transformOrigin: "left center",
+                  transform: "rotateY(90deg)",
+                  backgroundColor: book.spine,
+                  backgroundImage: book.cover ? `url(${book.cover})` : undefined,
+                  backgroundSize: "contain",
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "center",
+                }}
+              />
+              <span
+                className="pointer-events-none absolute -top-[6px] left-0 h-[6px] w-full"
+                style={{
+                  transformOrigin: "bottom center",
+                  transform: "rotateX(78deg)",
+                  background: "linear-gradient(90deg, #efe6d3, #cdc0a8)",
+                }}
+              />
+            </>
+          )}
+          {!stacked && book.binding === "hardcover" && (
             <span
               className="pointer-events-none absolute -top-[2px] left-0 h-[2px] w-full"
               style={{ backgroundColor: book.band ?? book.ink, opacity: 0.85 }}

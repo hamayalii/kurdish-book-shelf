@@ -84,19 +84,37 @@ export function Shelf({ books, justAdded }: Props) {
             {rows.map((row, rowIndex) => (
               <section key={rowIndex} className="shelf-bay" aria-label={`${rowIndex + 1}`}>
                 <div className={`shelf-books shelf-books-${rowIndex + 1}`}>
-                  {row.map((book) => {
+                  {rowIndex === 1 && row.length === 3 ? (
+                    <>
+                      <ShelfBook
+                        book={row[0]}
+                        index={books.indexOf(row[0])}
+                        justAdded={justAdded}
+                        onOpen={openAt}
+                      />
+                      <div className="book-stack">
+                        {row.slice(1).map((book) => (
+                          <ShelfBook
+                            key={book.id}
+                            book={book}
+                            index={books.indexOf(book)}
+                            justAdded={justAdded}
+                            onOpen={openAt}
+                            stacked
+                          />
+                        ))}
+                      </div>
+                    </>
+                  ) : row.map((book) => {
                     const index = books.indexOf(book);
-                    const stacked = rowIndex === 1 && row.length > 2 && book === row[row.length - 1];
                     return (
-              <div
-                key={book.id}
-                data-spine
-                data-book-id={book.id}
-                style={{ transformStyle: "preserve-3d" }}
-                className={`book-position ${stacked ? "book-position-stacked" : ""} ${justAdded === book.id ? "animate-shelve-in" : ""}`}
-              >
-                <BookSpine book={book} stacked={stacked} onOpen={(el) => openAt(index, el)} />
-              </div>
+                      <ShelfBook
+                        key={book.id}
+                        book={book}
+                        index={index}
+                        justAdded={justAdded}
+                        onOpen={openAt}
+                      />
                     );
                   })}
                 </div>
@@ -118,5 +136,30 @@ export function Shelf({ books, justAdded }: Props) {
         />
       )}
     </>
+  );
+}
+
+function ShelfBook({
+  book,
+  index,
+  justAdded,
+  onOpen,
+  stacked = false,
+}: {
+  book: Book;
+  index: number;
+  justAdded?: string | null;
+  onOpen: (index: number, el: HTMLElement | null) => void;
+  stacked?: boolean;
+}) {
+  return (
+    <div
+      data-spine
+      data-book-id={book.id}
+      style={{ transformStyle: "preserve-3d" }}
+      className={`book-position ${stacked ? "book-position-stacked" : ""} ${justAdded === book.id ? "animate-shelve-in" : ""}`}
+    >
+      <BookSpine book={book} stacked={stacked} onOpen={(el) => onOpen(index, el)} />
+    </div>
   );
 }

@@ -161,7 +161,18 @@
 }
 
 .book-position-stacked {
-  margin-inline-start: clamp(16px, 5vw, 64px);
+  flex: none;
+}
+
+.book-stack {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1px;
+  margin-inline-start: clamp(22px, 6vw, 76px);
+  padding-bottom: 1px;
+  filter: drop-shadow(0 8px 5px var(--book-shadow));
 }
 
 .shelf-plank {

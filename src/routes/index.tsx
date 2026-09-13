@@ -31,9 +31,9 @@ function Index() {
 
   return (
     <div dir="rtl" lang="ckb" className="grain relative min-h-screen overflow-hidden bg-background">
-      <div className="library-light pointer-events-none absolute inset-0" />
+      <div className="animate-drift pointer-events-none absolute inset-0 bg-[radial-gradient(70%_55%_at_50%_10%,var(--color-glow),transparent_70%)]" />
 
-      <header className="relative mx-auto max-w-4xl px-6 pt-10 text-center sm:pt-14">
+      <header className="relative mx-auto max-w-4xl px-6 pt-16 text-center sm:pt-24">
         <p className="font-mono text-[11px] tracking-[0.3em] text-muted-foreground uppercase">{t.archive}</p>
         <div className="mt-4">
           <TypedTitle />
@@ -44,7 +44,7 @@ function Index() {
         <LibraryFilter books={books} onChange={handleChange} />
       </header>
 
-      <main className="relative mt-7 pb-20 sm:mt-10">
+      <main className="relative mt-6 pb-16">
         {list.length ? (
           <Shelf books={list} />
         ) : (

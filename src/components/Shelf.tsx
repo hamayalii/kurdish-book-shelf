@@ -1,130 +1,158 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Book } from "@/data/books";
 import { BookSpine } from "./BookSpine";
 import { BookDetail, type SpineRect } from "./BookDetail";
 
 type Props = { books: Book[]; justAdded?: string | null };
 
+const LOOP_THRESHOLD = 2600;
+
 export function Shelf({ books, justAdded }: Props) {
-  const cabinetRef = useRef<HTMLDivElement>(null);
+  const railRef = useRef<HTMLDivElement>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const [overflowing, setOverflowing] = useState(false);
+  const [copies, setCopies] = useState(1);
   const [open, setOpen] = useState<{ index: number; rect: SpineRect } | null>(null);
 
+  const totalWidth = books.reduce((sum, b) => sum + b.width + 2, 0);
+
+  useLayoutEffect(() => {
+    setCopies(totalWidth > LOOP_THRESHOLD ? 3 : 1);
+  }, [totalWidth]);
+
+  // curved perspective
   const applyCurve = useCallback(() => {
-    const cabinet = cabinetRef.current;
-    if (!cabinet) return;
-    const bounds = cabinet.getBoundingClientRect();
-    const mid = bounds.left + bounds.width / 2;
-    cabinet.querySelectorAll<HTMLElement>("[data-spine]").forEach((el) => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const mid = rail.getBoundingClientRect().left + rail.clientWidth / 2;
+    rail.querySelectorAll<HTMLElement>("[data-spine]").forEach((el) => {
       const r = el.getBoundingClientRect();
-      const tRaw = (r.left + r.width / 2 - mid) / (bounds.width / 2);
+      const tRaw = (r.left + r.width / 2 - mid) / (rail.clientWidth / 2);
       const clamped = Math.max(-1, Math.min(1, tRaw));
       const eased = Math.sign(clamped) * Math.pow(Math.abs(clamped), 1.35);
-      el.style.setProperty("--ry", `${-eased * 11}deg`);
+      el.style.setProperty("--ry", `${-eased * 34}deg`);
     });
   }, []);
 
   useEffect(() => {
-    const cabinet = cabinetRef.current;
-    if (!cabinet) return;
+    const rail = railRef.current;
+    if (!rail) return;
+
+    if (copies === 3) rail.scrollLeft = rail.scrollWidth / 3;
     applyCurve();
+
+    const onScroll = () => {
+      if (copies === 3) {
+        const seg = rail.scrollWidth / 3;
+        if (rail.scrollLeft < seg * 0.5) rail.scrollLeft += seg;
+        else if (rail.scrollLeft > seg * 1.5) rail.scrollLeft -= seg;
+      }
+      applyCurve();
+    };
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        rail.scrollLeft += e.deltaY;
+      }
+    };
+    rail.addEventListener("scroll", onScroll, { passive: true });
+    rail.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("resize", applyCurve);
-    const ro = new ResizeObserver(applyCurve);
-    ro.observe(cabinet);
+
+    const ro = new ResizeObserver(() => {
+      setOverflowing(rail.scrollWidth > rail.clientWidth + 8);
+      applyCurve();
+    });
+    ro.observe(rail);
+    if (rowRef.current) ro.observe(rowRef.current);
 
     return () => {
+      rail.removeEventListener("scroll", onScroll);
+      rail.removeEventListener("wheel", onWheel);
       window.removeEventListener("resize", applyCurve);
       ro.disconnect();
     };
-  }, [applyCurve, books.length]);
+  }, [applyCurve, copies, books.length]);
+
+  // drag to scroll
+  const drag = useRef<{ x: number; left: number } | null>(null);
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (!railRef.current) return;
+    drag.current = { x: e.clientX, left: railRef.current.scrollLeft };
+  };
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!drag.current || !railRef.current) return;
+    railRef.current.scrollLeft = drag.current.left - (e.clientX - drag.current.x);
+  };
+  const endDrag = () => { drag.current = null; };
 
   // arrow keys
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (open || !cabinetRef.current) return;
-      if (e.key === "ArrowRight" || e.key === "ArrowLeft") cabinetRef.current.focus();
+      if (open || !railRef.current) return;
+      if (e.key === "ArrowRight") railRef.current.scrollLeft += 320;
+      if (e.key === "ArrowLeft") railRef.current.scrollLeft -= 320;
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
   useEffect(() => {
-    if (!justAdded || !cabinetRef.current) return;
-    const el = cabinetRef.current.querySelector<HTMLElement>(`[data-book-id="${justAdded}"]`);
-    el?.scrollIntoView({ inline: "center", block: "center", behavior: "smooth" });
+    if (!justAdded || !railRef.current) return;
+    const el = railRef.current.querySelector<HTMLElement>(`[data-book-id="${justAdded}"]`);
+    el?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
   }, [justAdded]);
 
   const openAt = (index: number, el: HTMLElement | null) => {
     const r = el?.getBoundingClientRect();
     if (!r) return;
-    const book = books[index];
-    if (!book) return;
-    const stacked = el?.dataset["stacked"] === "true";
-    const scale = 0.58;
-    const width = stacked ? book.width * scale : r.width;
-    const height = stacked ? book.height * scale : r.height;
-    setOpen({
-      index,
-      rect: {
-        left: stacked ? r.left + r.width / 2 - width / 2 : r.left,
-        top: stacked ? r.top + r.height / 2 - height / 2 : r.top,
-        width,
-        height,
-      },
-    });
+    setOpen({ index, rect: { left: r.left, top: r.top, width: r.width, height: r.height } });
   };
 
-  const rows = [0, 1, 2].map((offset) => books.filter((_, index) => index % 3 === offset));
+  const rendered = Array.from({ length: copies }, (_, c) => c);
 
   return (
     <>
-      <div className="cabinet-wrap mx-auto w-full max-w-6xl px-3 sm:px-6">
-        <div ref={cabinetRef} tabIndex={-1} className="wood-cabinet relative outline-none" dir="ltr">
-          <div className="cabinet-crown" aria-hidden="true" />
-          <div className="cabinet-inner">
-            {rows.map((row, rowIndex) => (
-              <section key={rowIndex} className="shelf-bay" aria-label={`${rowIndex + 1}`}>
-                <div className={`shelf-books shelf-books-${rowIndex + 1}`}>
-                  {rowIndex === 1 && row.length === 3 ? (
-                    <>
-                      <ShelfBook
-                        book={row[0]}
-                        index={books.indexOf(row[0])}
-                        justAdded={justAdded}
-                        onOpen={openAt}
-                      />
-                      <div className="book-stack">
-                        {row.slice(1).map((book) => (
-                          <ShelfBook
-                            key={book.id}
-                            book={book}
-                            index={books.indexOf(book)}
-                            justAdded={justAdded}
-                            onOpen={openAt}
-                            stacked
-                          />
-                        ))}
-                      </div>
-                    </>
-                  ) : row.map((book) => {
-                    const index = books.indexOf(book);
-                    return (
-                      <ShelfBook
-                        key={book.id}
-                        book={book}
-                        index={index}
-                        justAdded={justAdded}
-                        onOpen={openAt}
-                      />
-                    );
-                  })}
-                </div>
-                <div className="shelf-plank" aria-hidden="true" />
-              </section>
-            ))}
-          </div>
-          <div className="cabinet-plinth" aria-hidden="true" />
+      <div
+        ref={railRef}
+        dir="ltr"
+        className="no-scrollbar relative overflow-x-auto overflow-y-visible pt-16 pb-6"
+        style={{ perspective: "1400px", perspectiveOrigin: "50% 65%" }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerLeave={endDrag}
+      >
+        <div
+          ref={rowRef}
+          className={`flex items-end gap-[2px] px-10 ${overflowing ? "" : "justify-center"}`}
+          style={{ transformStyle: "preserve-3d" }}
+        >
+          {rendered.map((c) =>
+            books.map((book, i) => (
+              <div
+                key={`${c}-${book.id}`}
+                data-spine
+                data-book-id={c === 0 ? book.id : undefined}
+                style={{ transformStyle: "preserve-3d" }}
+                className={justAdded === book.id ? "animate-shelve-in" : undefined}
+              >
+                <BookSpine book={book} onOpen={(el) => openAt(i, el)} />
+              </div>
+            )),
+          )}
         </div>
+
+        {overflowing && (
+          <>
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-background to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background to-transparent" />
+          </>
+        )}
       </div>
+
+      <div className="mx-auto h-px w-full max-w-5xl bg-gradient-to-r from-transparent via-foreground/25 to-transparent" />
+      <div className="mx-auto h-10 w-full max-w-5xl bg-gradient-to-b from-foreground/8 to-transparent" />
 
       {open && (
         <BookDetail
@@ -136,30 +164,5 @@ export function Shelf({ books, justAdded }: Props) {
         />
       )}
     </>
-  );
-}
-
-function ShelfBook({
-  book,
-  index,
-  justAdded,
-  onOpen,
-  stacked = false,
-}: {
-  book: Book;
-  index: number;
-  justAdded?: string | null;
-  onOpen: (index: number, el: HTMLElement | null) => void;
-  stacked?: boolean;
-}) {
-  return (
-    <div
-      data-spine
-      data-book-id={book.id}
-      style={{ transformStyle: "preserve-3d" }}
-      className={`book-position ${stacked ? "book-position-stacked" : ""} ${justAdded === book.id ? "animate-shelve-in" : ""}`}
-    >
-      <BookSpine book={book} stacked={stacked} onOpen={(el) => onOpen(index, el)} />
-    </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Book } from "@/data/books";
-import { COVER_W, faceFont, finishSheen, paperTexture } from "./bookFaces";
+import { COVER_W } from "./bookFaces";
 import { bindingLabels, genreLabels, t } from "@/lib/i18n";
 
 const PULL = 96;
@@ -38,8 +38,6 @@ export function BookSpine({ book, onOpen, className }: Props) {
   const lean = hover ? 0 : book.lean;
   const pull = hover ? PULL : 0;
   const lift = hover ? LIFT : 0;
-  const fontSize = Math.max(9, Math.min(15, book.width * 0.42));
-  const titleTrack = book.height * 0.72;
 
   return (
     <>
@@ -61,7 +59,7 @@ export function BookSpine({ book, onOpen, className }: Props) {
         }}
       >
         <span
-          className="absolute bottom-0 left-0 block rounded-[2px]"
+          className="absolute bottom-0 left-0 block"
           style={{
             width: book.width,
             height: book.height,
@@ -69,83 +67,18 @@ export function BookSpine({ book, onOpen, className }: Props) {
             transformOrigin: "bottom center",
             transform: `rotateY(var(--ry, 0deg)) rotateZ(${lean}deg) translateZ(${pull + book.depth}px) translateY(${lift}px)`,
             transition: "transform 620ms cubic-bezier(0.16,1,0.3,1)",
-            backgroundColor: book.spine,
-            boxShadow: "0 22px 34px -20px rgba(0,0,0,0.55)",
+            filter: hover ? "drop-shadow(0 22px 12px rgb(0 0 0 / 0.28))" : "drop-shadow(0 12px 9px rgb(0 0 0 / 0.22))",
           }}
         >
-          {/* head / foot rules in the accent band */}
-          <span
-            className="pointer-events-none absolute inset-x-0 top-[9%] h-[3px] opacity-80"
-            style={{ backgroundColor: book.band ?? book.ink }}
-          />
-          <span
-            className="pointer-events-none absolute inset-x-0 bottom-[13%] h-[3px] opacity-70"
-            style={{ backgroundColor: book.band ?? book.ink }}
-          />
-
-          {/* vertical Kurdish title — rotated so Arabic-script shaping stays intact */}
-          <span
-            dir="rtl"
-            lang="ckb"
-            className={`${faceFont[book.face]} pointer-events-none absolute top-1/2 left-1/2 block overflow-hidden text-center whitespace-nowrap`}
-            style={{
-              width: titleTrack,
-              transform: `translate(-50%, -50%) rotate(90deg) translateY(${book.width >= 44 ? -0.55 * fontSize : 0}px)`,
-              transformOrigin: "center center",
-              color: book.ink,
-              fontSize,
-              lineHeight: 1.05,
-              letterSpacing: book.caps ? "0.06em" : "0.01em",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {book.title}
-          </span>
-
-          {/* vertical author on wide spines only */}
-          {book.width >= 44 && (
-            <span
-              dir="rtl"
-              lang="ckb"
-              className="pointer-events-none absolute top-1/2 left-1/2 block overflow-hidden text-center font-sans whitespace-nowrap"
-              style={{
-                width: titleTrack,
-                transform: `translate(-50%, -50%) rotate(90deg) translateY(${0.85 * fontSize}px)`,
-                color: book.ink,
-                opacity: 0.75,
-                fontSize: 10,
-                textOverflow: "ellipsis",
-              }}
-            >
-              {book.author}
-            </span>
-          )}
-
-          {/* publisher / year mark at the foot */}
-          {book.width >= 30 && (
-            <span
-              className="pointer-events-none absolute inset-x-0 bottom-[4%] text-center font-mono"
-              style={{ color: book.ink, opacity: 0.6, fontSize: 7 }}
-            >
-              {book.year || ""}
-            </span>
-          )}
-
-          {/* material texture, sheen, wear, inset highlight */}
-          <span className="pointer-events-none absolute inset-0 opacity-25" style={{ backgroundImage: paperTexture }} />
-          <span className="pointer-events-none absolute inset-0" style={{ backgroundImage: finishSheen[book.finish] }} />
-          <span
-            className="pointer-events-none absolute inset-0"
-            style={{
-              opacity: book.wear,
-              backgroundImage:
-                "linear-gradient(180deg, rgba(255,255,255,0.22), rgba(0,0,0,0) 30%), linear-gradient(0deg, rgba(0,0,0,0.35), rgba(0,0,0,0) 26%)",
-            }}
-          />
-          <span
-            className="pointer-events-none absolute inset-0 rounded-[2px]"
-            style={{ boxShadow: "inset 1px 0 0 rgba(255,255,255,0.18), inset -1px 0 0 rgba(0,0,0,0.35)" }}
-          />
+          {book.spineImage ? (
+            <img
+              src={book.spineImage}
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+              className="pointer-events-none h-full w-full object-contain"
+            />
+          ) : null}
 
           {/* hinged front cover face */}
           <span
@@ -156,7 +89,8 @@ export function BookSpine({ book, onOpen, className }: Props) {
               transform: "rotateY(90deg)",
               backgroundColor: book.spine,
               backgroundImage: book.cover ? `url(${book.cover})` : undefined,
-              backgroundSize: "cover",
+              backgroundSize: "contain",
+              backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
             }}
           />

@@ -32,8 +32,7 @@ export type Book = {
 
 /**
  * Source of truth: kurdish_books.csv (Kurdish Sorani personal library).
- * No covers were supplied, so `cover` stays empty and spines are CSS-generated
- * with the exact Kurdish title/author text.
+ * Original front covers and isolated transparent spines are mapped by title.
  */
 export const books: Book[] = [
   {
@@ -45,6 +44,7 @@ export const books: Book[] = [
     language: "ckb",
     genres: ["Fantasy"],
     cover: "/covers/hobit-tolkien-front.jpg",
+    spineImage: "/covers/hobit-tolkien-spine.png",
     year: 2017,
     blurb:
       "هۆبیت چیرۆکی کۆڵنەدان و پێداگرییەکی بێئامانەیە بۆ سەرخستنی ڕەوا بەسەر ناڕەوا و سەرکەوتنی هەق بەسەر ناهەقدا.",
@@ -72,6 +72,7 @@ export const books: Book[] = [
     language: "ckb",
     genres: ["Nonfiction"],
     cover: "/covers/dana-u-zanayeki-kurdi-musliman-front.jpg",
+    spineImage: "/covers/dana-u-zanayeki-kurdi-musliman-spine.png",
     year: 2023,
     blurb:
       "ئەم کتێبە ناساندنێکە لە ژیاننامە و کارەکانی چەند دانا و زانا و مێژوونووس و گەریدە و کەسایەتیی کوردی موسڵمان کە ڕۆڵ و کاریگەریی گرنگیان لەناو شارستانییەتی ئیسلامیدا هەبووە.",
@@ -101,6 +102,7 @@ export const books: Book[] = [
     language: "ckb",
     genres: ["Nonfiction"],
     cover: "/covers/48-yasay-desellat-front.jpg",
+    spineImage: "/covers/48-yasay-desellat-spine.png",
     year: 2018,
     blurb:
       "کتێبێکە دەربارەی یاساکانی دەسەڵاتدارێتی لە سەرجەم بوارەکانی ژیاندا، لە ئەنجامی بیست ساڵ لێکۆڵینەوەی بەرفراوان لەسەر دەسەڵات.",
@@ -130,6 +132,7 @@ export const books: Book[] = [
     language: "ckb",
     genres: ["Nonfiction"],
     cover: "/covers/muqedimey-ibn-kheldun-front.jpg",
+    spineImage: "/covers/muqedimey-ibn-kheldun-spine.png",
     year: 2016,
     blurb:
       "یەکێکە لە شاکارە گەورەکانی جیهانی عەرەبی ئیسلامی کە لەبارەی فەلسەفەی مێژوو و کۆمەڵناسی و بنەماکانی زانستە ئابووری و سیاسییەکانەوە دەدوێت.",
@@ -157,6 +160,7 @@ export const books: Book[] = [
     language: "ckb",
     genres: ["Fiction"],
     cover: "/covers/petate-khorekan-front.jpg",
+    spineImage: "/covers/petate-khorekan-spine.png",
     year: 2011,
     blurb:
       "کۆمەڵە چیرۆکێکە دەربارەی تاوونێک کە لە شارێکدا بڵاو دەبێتەوە و دانیشتوانی شار هەموو خواردنێکیان لەبیر دەچێت و تەنها حەزیان بە پەتاتە دەبێت.",
@@ -184,6 +188,7 @@ export const books: Book[] = [
     language: "ckb",
     genres: ["Fiction"],
     cover: "/covers/shari-mosiqare-spiyekan-front.jpg",
+    spineImage: "/covers/shari-mosiqare-spiyekan-spine.png",
     year: 2024,
     blurb:
       "سەرەتای ئەم چیرۆکە لە فڕۆکەخانەی سخێپهۆڵ لە نزیک ئەمەستەردامەوە دەست پێدەکات، لە ساڵی ١٩٩٨ کە کارەکتەرەکە بۆ دووەم جار دەیەوێت بگەڕێتەوە بۆ کوردستان.",
@@ -211,7 +216,8 @@ export const books: Book[] = [
     author: "سیڤان عمر",
     language: "ckb",
     genres: ["Nonfiction"],
-    cover: "",
+    cover: "/covers/ferkirdni-birkirdinewe-front.jpg",
+    spineImage: "/covers/ferkirdni-birkirdinewe-spine.png",
     year: 0,
     blurb:
       "ئەم کتێبە ڕێبەرێکی پەروەردەییە بۆ پەرەپێدانی توانای بیرکردنەوەی کرێکارانی دامەزراوەکان، مامۆستایان و پەروەردەکاران و بۆ ڕووبەڕووبوونەوەی کێشە جۆراوجۆرەکانی ژیان.",
@@ -238,6 +244,7 @@ export const books: Book[] = [
     language: "ckb",
     genres: ["Nonfiction"],
     cover: "/covers/bnemakani-deruundrusti-front.jpg",
+    spineImage: "/covers/bnemakani-deruundrusti-spine.png",
     year: 2022,
     blurb: "",
     rating: 0,
@@ -267,6 +274,7 @@ export const books: Book[] = [
     language: "ckb",
     genres: ["Nonfiction"],
     cover: "/covers/khuwe-bchukekan-front.jpg",
+    spineImage: "/covers/khuwe-bchukekan-spine.png",
     year: 2025,
     blurb: "",
     rating: 0,

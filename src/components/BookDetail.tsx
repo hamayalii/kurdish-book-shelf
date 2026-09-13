@@ -92,19 +92,21 @@ export function BookDetail({ books, index, rect, onIndexChange, onClose }: Props
           transition: "transform 900ms cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       >
-        <div className="absolute inset-0" style={{ backgroundColor: book.spine, transformStyle: "preserve-3d" }}>
+        <div className="absolute inset-0" style={{ transformStyle: "preserve-3d" }}>
+          {book.spineImage ? (
+            <img src={book.spineImage} alt="" aria-hidden="true" className="h-full w-full object-contain" />
+          ) : null}
           <div
             className="absolute top-0 left-full h-full overflow-hidden"
             style={{
               width: COVER_W,
               transformOrigin: "left center",
               transform: "rotateY(90deg)",
-              backgroundColor: book.spine,
               boxShadow: "0 30px 60px -24px rgba(0,0,0,0.6)",
             }}
           >
             {book.cover ? (
-              <img src={book.cover} alt={book.title} className="h-full w-full object-cover" />
+              <img src={book.cover} alt={book.title} className="h-full w-full object-contain" />
             ) : (
               <div
                 className="flex h-full w-full flex-col justify-between p-4 text-right"
